@@ -12,9 +12,9 @@ class UserSchemaPublic(BaseModel):
     id: int
 
 
-class Userdb(UserSchema):
-    id: int
-
-
-class User_List(BaseModel):
+class UserList(BaseModel):
     users: list[UserSchemaPublic]
+
+
+class UserUpdate(BaseModel):
+    password: str

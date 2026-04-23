@@ -23,31 +23,28 @@ def test_create_user(client):
     }
 
 
-def test_read_user(client):
+def test_read_user(client, user_test):
     response = client.get('/user/')
-    assert response.status_code == HTTPStatus.OK
     assert response.json() == {
         'users': [
-            {
-                'id': 1,
-                'email': 'alice@example.com',
-            }
+            {'email': 'teste@test.com', 'id': 1},
         ]
     }
 
 
-def test_update_user(client):
+def test_update_user(client, user_test):
     response = client.put(
         '/user/1',
         json={
             'email': 'super@gmail.com',
-            'password': '123',
+            'password': '12356',
             'cpf': 123,
         },
     )
     assert response.status_code == HTTPStatus.OK
 
 
-def test_delete_user(client):
+def test_delete_user(client, user_test):
     response = client.delete('/user/1')
     assert response.status_code == HTTPStatus.OK
+    assert response.json() == {"msg": "user deleted"}

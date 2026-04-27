@@ -65,4 +65,6 @@ def token(client, user_test):
             'password': user_test.clean_password,
         },
     )
+    print('============= flag=============')
+    print(response.status_code)
     return response.json()['access_token']

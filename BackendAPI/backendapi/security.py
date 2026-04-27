@@ -14,7 +14,7 @@ from backendapi.models.user_models import User
 from backendapi.settings import Settings
 
 pwd = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/token')
 
 
 def creat_access_token(data: dict):

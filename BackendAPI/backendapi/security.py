@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt import DecodeError, decode, encode
 from pwdlib import PasswordHash
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backendapi.database import create_session
 from backendapi.models.user_models import User
@@ -38,8 +38,8 @@ def verify_password_hash(plain_password: str, hashed_password: str):
     return pwd.verify(plain_password, hashed_password)
 
 
-def get_current_user(
-    session: Session = Depends(create_session),
+async def get_current_user(
+    session: AsyncSession = Depends(create_session),
     token: str = Depends(oauth2_scheme),
 ):
 
@@ -61,7 +61,7 @@ def get_current_user(
     except DecodeError:
         raise credentials_exception
 
-    user_from_db = session.scalar(
+    user_from_db = await session.scalar(
         select(User).where(User.email == subject_email)
     )
 

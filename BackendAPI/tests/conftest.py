@@ -1,7 +1,7 @@
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.pool import StaticPool
 
 from backendapi.app import app
@@ -22,26 +22,26 @@ def client(session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def session():
+@pytest_asyncio.fixture
+async def session():
 
-    engine = create_engine(
-        'sqlite:///:memory:',
+    engine = create_async_engine(
+        'sqlite+aiosqlite:///:memory:',
         connect_args={'check_same_thread': False},
         poolclass=StaticPool,
     )
+    async with engine.begin() as conn:
+        await conn.run_sync(table_registry.metadata.create_all)
 
-    table_registry.metadata.create_all(engine)
-
-    with Session(engine) as session:
+    async with AsyncSession(engine, expire_on_commit=False) as session:
         yield session
 
-    table_registry.metadata.drop_all(engine)
-    engine.dispose()
+    async with engine.begin() as conn:
+        await conn.run_sync(table_registry.metadata.drop_all)
 
 
-@pytest.fixture
-def user_test(session):
+@pytest_asyncio.fixture
+async def user_test(session):
     password = 'test'
     fake_user = User(
         email='teste@test.com',
@@ -49,8 +49,8 @@ def user_test(session):
         cpf=1234567890,
     )
     session.add(fake_user)
-    session.commit()
-    session.refresh(fake_user)
+    await session.commit()
+    await session.refresh(fake_user)
 
     fake_user.clean_password = password
     return fake_user

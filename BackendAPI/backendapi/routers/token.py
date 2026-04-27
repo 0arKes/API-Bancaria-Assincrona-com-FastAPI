@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backendapi.database import create_session
 from backendapi.models.user_models import User
@@ -14,18 +14,18 @@ from backendapi.security import (
     verify_password_hash,
 )
 
-GetSession = Annotated[Session, Depends(create_session)]
+GetSession = Annotated[AsyncSession, Depends(create_session)]
 OAuth2Form = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 router = APIRouter(prefix='/token', tags=['Token'])
 
 
 @router.post('/', response_model=Token)
-def get_access_token(
+async def get_access_token(
     session: GetSession,
     form_data: OAuth2Form,
 ):
-    user_from_db = session.scalar(
+    user_from_db = await session.scalar(
         select(User).where(User.email == form_data.username)
     )
     if not user_from_db:

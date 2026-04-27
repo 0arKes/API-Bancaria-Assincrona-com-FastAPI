@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backendapi.database import create_session
 from backendapi.models.user_models import User
@@ -19,7 +19,7 @@ from backendapi.security import (
     get_password_hash,
 )
 
-GetSession = Annotated[Session, Depends(create_session)]
+GetSession = Annotated[AsyncSession, Depends(create_session)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 router = APIRouter(prefix='/user', tags=['Users'])
@@ -28,8 +28,8 @@ router = APIRouter(prefix='/user', tags=['Users'])
 @router.post(
     '/', status_code=HTTPStatus.CREATED, response_model=UserSchemaPublic
 )
-def create_user(user: UserSchema, session: GetSession):
-    user_from_db = session.scalar(
+async def create_user(user: UserSchema, session: GetSession):
+    user_from_db = await session.scalar(
         select(User).where((User.email == user.email) | (User.cpf == user.cpf))
     )
     if user_from_db:
@@ -43,18 +43,19 @@ def create_user(user: UserSchema, session: GetSession):
         cpf=user.cpf,
     )
     session.add(user_data)
-    session.commit()
-    session.refresh(user_data)
+    await session.commit()
+    await session.refresh(user_data)
     return user_data
 
 
 @router.get('/', status_code=HTTPStatus.OK, response_model=UserList)
-def read_user(
+async def read_user(
     session: GetSession, filter_page: Annotated[FilterPage, Query()]
 ):
-    users = session.scalars(
+    query = await session.scalars(
         select(User).offset(filter_page.offset).limit(filter_page.limit)
-    ).all()
+    )
+    users = query.all()
     return {'users': users}
 
 
@@ -63,7 +64,7 @@ def read_user(
     status_code=HTTPStatus.OK,
     response_model=UserSchemaPublic,
 )
-def update_user(
+async def update_user(
     user_id: int,
     user: UserUpdate,
     session: GetSession,
@@ -81,13 +82,13 @@ def update_user(
         )
 
     current_user.password = get_password_hash(user.password)
-    session.commit()
-    session.refresh(current_user)
+    await session.commit()
+    await session.refresh(current_user)
     return current_user
 
 
 @router.delete('/{user_id}', status_code=HTTPStatus.OK)
-def delete_user(
+async def delete_user(
     user_id: int,
     session: GetSession,
     current_user: CurrentUser,
@@ -101,7 +102,7 @@ def delete_user(
     if not current_user:
         raise HTTPException(HTTPStatus.NOT_FOUND, detail='User not found')
 
-    session.delete(current_user)
-    session.commit()
+    await session.delete(current_user)
+    await session.commit()
 
     return {'msg': 'user deleted'}

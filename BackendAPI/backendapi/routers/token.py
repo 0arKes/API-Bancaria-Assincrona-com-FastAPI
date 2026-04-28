@@ -10,7 +10,7 @@ from backendapi.database import create_session
 from backendapi.models.user_models import User
 from backendapi.schemas.token_schemas import Token
 from backendapi.security import (
-    creat_access_token,
+    create_access_token,
     verify_password_hash,
 )
 
@@ -35,9 +35,9 @@ async def get_access_token(
 
     if not verify_password_hash(form_data.password, user_from_db.password):
         raise HTTPException(
-            HTTPStatus.NOT_FOUND, detail='Incorrect email or password'
+            HTTPStatus.UNAUTHORIZED, detail='Incorrect email or password'
         )
 
-    access_token = creat_access_token(data={'sub': user_from_db.email})
+    access_token = create_access_token(data={'sub': user_from_db.email})
 
     return {'access_token': access_token, 'token_type': 'bearer'}

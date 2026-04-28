@@ -2,15 +2,17 @@ from http import HTTPStatus
 
 from jwt import decode
 
-from backendapi.security import creat_access_token
+from backendapi.security import create_access_token
 from backendapi.settings import Settings
 
 
 def test_jwt():
     data = {'test': 'test'}
-    token = creat_access_token(data=data)
+    token = create_access_token(data=data)
 
-    decoded = decode(token, Settings().SECRET_KEY, algorithms=['HS256'])
+    decoded = decode(
+        token, Settings().SECRET_KEY, algorithms=[Settings().ALGORITHM]
+    )
 
     assert decoded['test'] == data['test']
     assert 'exp' in decoded

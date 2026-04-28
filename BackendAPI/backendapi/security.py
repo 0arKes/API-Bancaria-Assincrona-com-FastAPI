@@ -17,7 +17,7 @@ pwd = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/token')
 
 
-def creat_access_token(data: dict):
+def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.now(tz=ZoneInfo('UTC')) + timedelta(
         minutes=Settings().ACCESS_TOKEN_EXPIRE_MINUTES

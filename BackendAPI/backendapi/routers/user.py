@@ -76,11 +76,6 @@ async def update_user(
             HTTPStatus.FORBIDDEN, detail='Not enough permissions'
         )
 
-    if not current_user:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='user not found'
-        )
-
     current_user.password = get_password_hash(user.password)
     await session.commit()
     await session.refresh(current_user)
@@ -98,9 +93,6 @@ async def delete_user(
         raise HTTPException(
             status_code=HTTPStatus.FORBIDDEN, detail='Not enough permissions'
         )
-
-    if not current_user:
-        raise HTTPException(HTTPStatus.NOT_FOUND, detail='User not found')
 
     await session.delete(current_user)
     await session.commit()

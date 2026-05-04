@@ -66,3 +66,29 @@ def token(client, user_test):
         },
     )
     return response.json()['access_token']
+
+
+@pytest.fixture
+def bank_account(client, token):
+    response = client.post(
+        '/bank/',
+        json={'balance': 100},
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    return response.json()
+
+
+@pytest.fixture
+def transaction(client, token, bank_account):
+    response = client.post(
+        '/transaction/',
+        json={
+            'account_id': bank_account['account_id'],
+            'type_transaction': 'deposit',
+            'amount': 50,
+        },
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    return response.json()

@@ -55,7 +55,7 @@ async def get_account_extract(
     account = await session.get(BankAccount, account_id)
 
     if not account:
-        raise HTTPException(HTTPStatus.FORBIDDEN, detail='Not allowed')
+        raise HTTPException(HTTPStatus.NOT_FOUND, detail='Account not found')
 
     if account.owner_id != user.id:
         raise HTTPException(HTTPStatus.FORBIDDEN, 'Not allowed')

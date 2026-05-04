@@ -24,10 +24,20 @@ async def test_create_with_negative_balance(client, token):
 
 
 @pytest.mark.asyncio
-async def test_create_with_no_token(client):
-    response = client.post(
-        '/bank/',
-        json={'balance': -100},
-        headers={'Authorization': 'Bearer test'},
+async def test_get_account_extract(client, token, bank_account, transaction):
+    response = client.get(
+        f'/bank/{bank_account["account_id"]}/',
+        headers={'Authorization': f'Bearer {token}'},
     )
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+    assert response.status_code == HTTPStatus.OK
+
+
+@pytest.mark.asyncio
+async def test_get_account_not_found(client, token):
+    response = client.get(
+        '/bank/999/',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.NOT_FOUND

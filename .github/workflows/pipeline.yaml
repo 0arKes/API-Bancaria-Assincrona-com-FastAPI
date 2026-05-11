@@ -31,3 +31,4 @@ jobs:
       - name: Executar testes
         working-directory: ./BackendAPI
         run: poetry run pytest
+        
